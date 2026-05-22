@@ -18,6 +18,9 @@ import com.apt.service.AppointmentService;
 import com.apt.util.IdGenerator;
 import com.apt.util.VarConstant;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
 
@@ -32,6 +35,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	/************************** Internal Private Methods **************************/
+	@CircuitBreaker(name = "DoctorService", fallbackMethod = "doctorFallback")
+	@Retry(name = "DoctorService")
 	private DoctorDTO getDoctorById(Appointment appointment) {
 		DoctorDTO doctorDTO = doctorClient.getDoctorByid(appointment.getDoctorId());
 		if (doctorDTO == null) {
@@ -42,10 +47,26 @@ public class AppointmentServiceImpl implements AppointmentService {
 		}
 	}
 
+	private DoctorDTO doctorFallback(Appointment appointment, Throwable t) {
+		System.err.println("Doctor service call failed for id " + appointment.getDoctorId() + ": " + t.getMessage());
+
+		// Return a safe default response
+		DoctorDTO fallbackDoctor = new DoctorDTO();
+		fallbackDoctor.setId(appointment.getDoctorId());
+		fallbackDoctor.setName("Doctor Unavailable");
+		fallbackDoctor.setSpecialization("N/A");
+		fallbackDoctor.setEmail("N/A");
+		fallbackDoctor.setPhoneNo("N/A");
+
+		return fallbackDoctor;
+	}
+
 	private String createPatientServiceURL(Appointment appointment) {
 		return VarConstant.HTTP_PATIENT_SERVICE_URI + appointment.getPatientId();
 	}
 
+	@CircuitBreaker(name = "PatientService", fallbackMethod = "patientFallback")
+	@Retry(name = "PatientService")
 	private PatientDTO getPatientById(Appointment appointment) {
 		PatientDTO patientDTO = restTemplate.getForObject(createPatientServiceURL(appointment), PatientDTO.class);
 		if (patientDTO == null) {
@@ -54,6 +75,21 @@ public class AppointmentServiceImpl implements AppointmentService {
 		} else {
 			return patientDTO;
 		}
+	}
+
+	// Fallback method must match signature + Throwable
+	private PatientDTO patientFallback(Appointment appointment, Throwable t) {
+		System.err.println("Patient service call failed for id " + appointment.getPatientId() + ": " + t.getMessage());
+
+		PatientDTO fallbackPatient = new PatientDTO();
+		fallbackPatient.setId(appointment.getPatientId());
+		fallbackPatient.setName("Patient Unavailable");
+		fallbackPatient.setAge(0);
+		fallbackPatient.setGender("N/A");
+		fallbackPatient.setEmail("N/A");
+		fallbackPatient.setPhone("N/A");
+
+		return fallbackPatient;
 	}
 
 	/************************** Internal Private Methods **************************/

@@ -36,6 +36,17 @@ spring:
             - Path=/patient/**
             filters:
             - StripPrefix=1
-           
-              
+
+#        webflux:
+#          globalcors:
+#            cors-configurations:
+#              '[/**]':
+#                allowedOrigins: "*"
+#                allowedMethods:
+#                  - GET
+#                  - POST
+#                  - PUT
+#                  - DELETE
+#                  - OPTIONS
+#                allowedHeaders: "*"         
 
