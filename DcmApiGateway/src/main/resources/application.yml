@@ -1,0 +1,41 @@
+server:
+  port: 8084
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+spring:
+  application:
+    name: DcmApiGateway
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+          - id: DoctorService
+            uri: lb://DoctorService
+            predicates:
+            - Path=/doctor/**
+            filters:
+            - StripPrefix=1
+
+          - id: AppointmentService
+            uri: lb://AppointmentService
+            predicates:
+            - Path=/appointment/**
+            filters:
+            - StripPrefix=1
+
+          - id: PatientService
+            uri: lb://PatientService
+            predicates:
+            - Path=/patient/**
+            filters:
+            - StripPrefix=1
+           
+              
+
