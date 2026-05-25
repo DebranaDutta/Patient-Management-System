@@ -13,7 +13,7 @@ public interface AppointmentService {
 	
 	public List<AppointmentResponse> getAllAppointmentsResponses();
 
-	public AppointmentResponse getAppointmentById(Long id);
+	public AppointmentResponse getAppointmentResponseById(Long id);
 
 	public Appointment bookAppointment(Appointment appointment);
 

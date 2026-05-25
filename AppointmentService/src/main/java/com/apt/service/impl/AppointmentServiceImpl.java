@@ -3,11 +3,14 @@ package com.apt.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.apt.client.DoctorClient;
+import com.apt.controller.AppointmentController;
 import com.apt.dto.DoctorDTO;
 import com.apt.dto.PatientDTO;
 import com.apt.entity.Appointment;
@@ -23,7 +26,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
-
+	
 	@Autowired
 	private AppointmentRepository appointmentRepository;
 	private final DoctorClient doctorClient;
@@ -35,8 +38,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	/************************** Internal Private Methods **************************/
-	@CircuitBreaker(name = "DoctorService", fallbackMethod = "doctorFallback")
-	@Retry(name = "DoctorService")
 	private DoctorDTO getDoctorById(Appointment appointment) {
 		DoctorDTO doctorDTO = doctorClient.getDoctorByid(appointment.getDoctorId());
 		if (doctorDTO == null) {
@@ -47,26 +48,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 		}
 	}
 
-	private DoctorDTO doctorFallback(Appointment appointment, Throwable t) {
-		System.err.println("Doctor service call failed for id " + appointment.getDoctorId() + ": " + t.getMessage());
-
-		// Return a safe default response
-		DoctorDTO fallbackDoctor = new DoctorDTO();
-		fallbackDoctor.setId(appointment.getDoctorId());
-		fallbackDoctor.setName("Doctor Unavailable");
-		fallbackDoctor.setSpecialization("N/A");
-		fallbackDoctor.setEmail("N/A");
-		fallbackDoctor.setPhoneNo("N/A");
-
-		return fallbackDoctor;
-	}
-
 	private String createPatientServiceURL(Appointment appointment) {
 		return VarConstant.HTTP_PATIENT_SERVICE_URI + appointment.getPatientId();
 	}
-
-	@CircuitBreaker(name = "PatientService", fallbackMethod = "patientFallback")
-	@Retry(name = "PatientService")
+	
 	private PatientDTO getPatientById(Appointment appointment) {
 		PatientDTO patientDTO = restTemplate.getForObject(createPatientServiceURL(appointment), PatientDTO.class);
 		if (patientDTO == null) {
@@ -75,21 +60,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 		} else {
 			return patientDTO;
 		}
-	}
-
-	// Fallback method must match signature + Throwable
-	private PatientDTO patientFallback(Appointment appointment, Throwable t) {
-		System.err.println("Patient service call failed for id " + appointment.getPatientId() + ": " + t.getMessage());
-
-		PatientDTO fallbackPatient = new PatientDTO();
-		fallbackPatient.setId(appointment.getPatientId());
-		fallbackPatient.setName("Patient Unavailable");
-		fallbackPatient.setAge(0);
-		fallbackPatient.setGender("N/A");
-		fallbackPatient.setEmail("N/A");
-		fallbackPatient.setPhone("N/A");
-
-		return fallbackPatient;
 	}
 
 	/************************** Internal Private Methods **************************/
@@ -115,7 +85,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	@Override
-	public AppointmentResponse getAppointmentById(Long id) {
+	public AppointmentResponse getAppointmentResponseById(Long id) {
 		Appointment appointment = appointmentRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Appointment not exists with given Id !! "));
 		DoctorDTO doctorDTO = getDoctorById(appointment);
