@@ -56,7 +56,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 		PatientDTO patientDTO = restTemplate.getForObject(createPatientServiceURL(appointment), PatientDTO.class);
 		if (patientDTO == null) {
 			throw new ResourceNotFoundException(
-					"Appointment Service : Doctor not found with given id: " + appointment.getPatientId());
+					"Appointment Service : Patient not found with given id: " + appointment.getPatientId());
 		} else {
 			return patientDTO;
 		}

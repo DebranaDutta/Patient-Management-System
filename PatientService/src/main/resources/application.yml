@@ -1,6 +1,6 @@
 spring:
   application:
-    name: appointment-service
+    name: patient-service
   config:
     import:
     - "configserver:http://localhost:8085/"
