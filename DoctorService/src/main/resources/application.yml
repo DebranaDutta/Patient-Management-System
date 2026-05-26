@@ -3,4 +3,5 @@ spring:
     name: doctor-service
   config:
     import:
-    - "configserver:http://localhost:8085/"
+    - "configserver:http://localhost:8085/" 
+
