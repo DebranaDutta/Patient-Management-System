@@ -40,12 +40,25 @@ public class DoctorServiceImpl implements DoctorService {
 
 	@Override
 	public Doctor updateDoctor(Doctor doctor, String id) {
-		
-		return null;
+		// Fetch existing doctor
+		Doctor existingDoctor = repository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException("Doctor with given id is not found on server !! : " + id));
+
+		// Update fields
+		existingDoctor.setName(doctor.getName());
+		existingDoctor.setSpecialization(doctor.getSpecialization());
+		existingDoctor.setEmail(doctor.getEmail());
+		existingDoctor.setPhone(doctor.getPhone());
+
+		// Save updated doctor
+		return repository.save(existingDoctor);
 	}
 
 	@Override
 	public void deleteDoctor(String id) {
+		if (!repository.existsById(id)) {
+			throw new ResourceNotFoundException("Doctor with given id is not found on server !! : " + id);
+		}
 		repository.deleteById(id);
 	}
 
