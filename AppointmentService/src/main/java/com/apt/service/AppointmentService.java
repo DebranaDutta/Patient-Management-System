@@ -19,5 +19,5 @@ public interface AppointmentService {
 
 	public Appointment updateAppointment(Long id, Appointment appointment);
 
-	public void cancelAppointment(Long id);
+	public Appointment cancelAppointment(Long id);
 }

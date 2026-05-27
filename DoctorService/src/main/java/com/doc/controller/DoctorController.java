@@ -20,6 +20,8 @@ import com.doc.entity.Doctor;
 import com.doc.service.DoctorService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +29,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/doc")
-@Tag(name="Doctor API", description = "Doctor service endpoints")
+@Tag(name = "Doctor API", description = "Doctor service endpoints")
 public class DoctorController {
 
 	@Autowired
@@ -39,67 +41,85 @@ public class DoctorController {
 
 	/************************** createDoctor **************************/
 	@Operation(summary = "Create a new doctor", description = "Adds a new doctor record to the system")
-	@ApiResponses(value = {
-	        @ApiResponse(responseCode = "202", description = "Doctor created successfully"),
-	        @ApiResponse(responseCode = "400", description = "Invalid input data")
-	    })
+	@ApiResponses(value = { @ApiResponse(
+									responseCode = "202", 
+									description = "Doctor created successfully"),
+							@ApiResponse(
+									responseCode = "400", 
+									description = "Invalid input data")})
 	@PostMapping("/create")
 	public ResponseEntity<Doctor> createDoctor(@Valid @RequestBody Doctor doctor) {
 		Doctor sdoc = doctorService.addDoctor(doctor);
 		return ResponseEntity.accepted().body(doctor);
 	}
+
 	/************************** createDoctor **************************/
-	
-	
+
 	/************************** getAllDoctors **************************/
 	@Operation(summary = "Get all doctors", description = "Fetches a list of all doctors")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "List of doctors returned")
-    })
+	@ApiResponses(value = { @ApiResponse(
+									responseCode = "200", 
+									description = "List of doctors returned")})
 	@GetMapping("/getAll")
 	public ResponseEntity<List<Doctor>> getAllDoctors() {
 		List<Doctor> doctors = doctorService.getAllDoctors();
 		System.out.println(doctors.toString());
 		return ResponseEntity.ok(doctors);
 	}
+
 	/************************** getAllDoctors **************************/
-	
-	
+
 	/************************** getDoctorById **************************/
 	@Operation(summary = "Get doctor by ID", description = "Fetches doctor details using doctor ID")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Doctor details returned"),
-        @ApiResponse(responseCode = "404", description = "Doctor not found")
-    })
+	@ApiResponses(value = { @ApiResponse(
+									responseCode = "200", 
+									description = "Doctor details returned"),
+							@ApiResponse(
+									responseCode = "404", 
+									description = "Doctor not found", 
+									content = @Content(mediaType = "application/json", 
+									schema = @Schema(implementation = com.doc.payload.ApiResponse.class)))})
 	@GetMapping("/{id}")
 	public ResponseEntity<Doctor> getDoctorById(@PathVariable(name = "id") String id) {
 		Doctor doctor = doctorService.getDoctorById(id);
 		return ResponseEntity.ok().body(doctor);
 	}
+
 	/************************** getDoctorById **************************/
-	
-	
+
 	/************************** deleteDoctor **************************/
 	@Operation(summary = "Delete doctor by ID", description = "Deletes a doctor record using doctor ID")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Doctor deleted successfully"),
-        @ApiResponse(responseCode = "404", description = "Doctor not found")
-    })
+	@ApiResponses(value = { @ApiResponse(
+									responseCode = "200", 
+									description = "Doctor deleted successfully"),
+							@ApiResponse(
+									responseCode = "404", 
+									description = "Doctor not found", 
+									content = @Content(mediaType = "application/json", 
+									schema = @Schema(implementation = com.doc.payload.ApiResponse.class)))})
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> deleteDoctor(@PathVariable(name = "id") String id) {
 		doctorService.deleteDoctor(id);
 		return ResponseEntity.ok("Doctor data delted successfully");
 	}
-	/************************** deleteDoctor **************************/
 
+	/************************** deleteDoctor **************************/
 
 	/************************** updateDoctor **************************/
 	@Operation(summary = "Update doctor by ID", description = "Updates doctor details using doctor ID")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Doctor updated successfully"),
-        @ApiResponse(responseCode = "404", description = "Doctor not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid input data")
-    })
+	@ApiResponses(value = { @ApiResponse(
+									responseCode = "200", 
+									description = "Doctor updated successfully"),
+							@ApiResponse(
+									responseCode = "404", 
+									description = "Doctor not found",
+									content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = com.doc.payload.ApiResponse.class))),
+							@ApiResponse(
+									responseCode = "400", 
+									description = "Invalid input data",
+									content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = com.doc.payload.ApiResponse.class)))})
 	@PutMapping("/{id}")
 	public ResponseEntity<Doctor> updateDoctor(@PathVariable(name = "id") String id, @RequestBody Doctor doctor) {
 		Doctor udc = doctorService.updateDoctor(doctor, id);

@@ -124,13 +124,14 @@ public class AppointmentServiceImpl implements AppointmentService {
 	}
 
 	@Override
-	public void cancelAppointment(Long id) {
+	public Appointment cancelAppointment(Long id) {
 		Appointment existingAppointment = appointmentRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Appointment not exists with given Id !! "));
 		if (existingAppointment != null) {
 			existingAppointment.setStatus("CANCELLED");
-			appointmentRepository.save(existingAppointment);
+			existingAppointment = appointmentRepository.save(existingAppointment);
 		}
+		return existingAppointment;
 	}
 
 }
